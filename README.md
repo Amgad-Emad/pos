@@ -16,7 +16,7 @@ Installing on a completely new device, you need:
 
 | Tool | Version | Notes |
 |---|---|---|
-| PHP | 8.3 or newer | with the default extensions Laravel needs (`pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `gd` or `imagick` for the shop logo) |
+| PHP | 8.2 or newer | works with the PHP 8.2 bundled with XAMPP; needs the default extensions Laravel uses (`pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `gd` or `imagick` for the shop logo) |
 | Composer | 2.x | dependency manager for PHP |
 | SQLite | any | bundled with PHP — no database server to install |
 
@@ -79,7 +79,7 @@ Use this path if you prefer XAMPP over Herd on a fresh Windows machine.
 
 ### 1. Install the tools
 
-1. Download and install **[XAMPP](https://www.apachefriends.org/download.html)** with **PHP 8.3 or newer** (the app needs at least 8.3 — pick the newest installer). Installing to the default `C:\xampp` is assumed below.
+1. Download and install **[XAMPP](https://www.apachefriends.org/download.html)** — the standard installer with its bundled **PHP 8.2** is fully supported (any newer PHP works too). Installing to the default `C:\xampp` is assumed below.
 2. Download and install **[Git for Windows](https://git-scm.com/download/win)**.
 3. Download and install **[Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe)**. During setup, when asked for the PHP to use, point it to `C:\xampp\php\php.exe`.
 

@@ -3,28 +3,28 @@
 namespace App\Models;
 
 use App\Enums\PaymentMethod;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable([
-    'invoice_number',
-    'client_name',
-    'client_phone',
-    'date',
-    'total_amount',
-    'sale_amount',
-    'total_after_sale',
-    'paid_amount',
-    'remaining_amount',
-    'payment_method',
-    'user_id',
-])]
 class Sale extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'invoice_number',
+        'client_name',
+        'client_phone',
+        'date',
+        'total_amount',
+        'sale_amount',
+        'total_after_sale',
+        'paid_amount',
+        'remaining_amount',
+        'payment_method',
+        'user_id',
+    ];
 
     protected function casts(): array
     {

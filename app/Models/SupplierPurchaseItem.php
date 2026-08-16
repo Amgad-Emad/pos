@@ -2,24 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable([
-    'supplier_purchase_id',
-    'name',
-    'code',
-    'category_id',
-    'purchase_price',
-    'selling_price',
-    'wholesale_price',
-    'quantity',
-])]
 class SupplierPurchaseItem extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'supplier_purchase_id',
+        'name',
+        'code',
+        'category_id',
+        'purchase_price',
+        'selling_price',
+        'wholesale_price',
+        'quantity',
+    ];
 
     protected function casts(): array
     {

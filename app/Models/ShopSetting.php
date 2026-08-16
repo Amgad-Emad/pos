@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-#[Fillable(['name', 'phone', 'address'])]
 class ShopSetting extends Model implements HasMedia
 {
     use InteractsWithMedia;
+
+    protected $fillable = ['name', 'phone', 'address'];
 
     /**
      * السجل الوحيد لإعدادات المتجر (يُنشأ عند أول طلب).
@@ -29,7 +30,7 @@ class ShopSetting extends Model implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Contain, 200, 200)
+            ->fit(Fit::Contain, 200, 200)
             ->nonQueued();
     }
 

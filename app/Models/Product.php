@@ -2,29 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-#[Fillable([
-    'supplier_id',
-    'category_id',
-    'name',
-    'code',
-    'purchase_price',
-    'selling_price',
-    'wholesale_price',
-    'quantity',
-])]
 class Product extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
+
+    protected $fillable = [
+        'supplier_id',
+        'category_id',
+        'name',
+        'code',
+        'purchase_price',
+        'selling_price',
+        'wholesale_price',
+        'quantity',
+    ];
 
     protected function casts(): array
     {
@@ -59,7 +60,7 @@ class Product extends Model implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->fit(\Spatie\Image\Enums\Fit::Crop, 80, 80)
+            ->fit(Fit::Crop, 80, 80)
             ->nonQueued();
     }
 
