@@ -1,0 +1,174 @@
+/**
+ * تحسينات واجهة الاستخدام لنظام نقطة البيع — تُحمَّل بعد rtl.css.
+ */
+
+/* ===== الحقول الإلزامية ===== */
+.form-label.required::after {
+    content: " *";
+    color: var(--ins-danger, #dc3545);
+    font-weight: 700;
+}
+
+/* ===== رأس الصفحة ===== */
+.page-title-head {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem 1.25rem;
+}
+.page-title-head .page-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: .65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ins-primary-bg-subtle, #eef2ff);
+    color: var(--ins-primary, #1c2434);
+    flex-shrink: 0;
+}
+.page-title-head .breadcrumb {
+    margin-bottom: 0;
+    font-size: .78rem;
+}
+
+/* ===== الشريط العلوي ===== */
+.app-topbar .topbar-date {
+    font-size: .8rem;
+    color: var(--ins-secondary-color, #6c757d);
+    background: var(--ins-tertiary-bg, #f1f3f5);
+    border-radius: 2rem;
+    padding: .35rem .9rem;
+    white-space: nowrap;
+}
+.app-topbar .user-chip {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border: 1px solid var(--ins-border-color, #e5e7eb);
+    background: var(--ins-secondary-bg, #fff);
+    border-radius: 2rem;
+    padding: .3rem .9rem .3rem .6rem;
+}
+.app-topbar .user-chip .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1c2434, #3b4a63);
+    color: #fff;
+    font-weight: 700;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+.app-topbar .user-chip .user-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    text-align: start;
+}
+.app-topbar .user-chip .user-meta .user-role {
+    font-size: .7rem;
+    color: var(--ins-secondary-color, #6c757d);
+}
+
+/* ===== القائمة الجانبية: تمتد لأعلى الصفحة لسد الفراغ فوقها ===== */
+.sidenav-menu { top: 0 !important; }
+.sidenav-menu .sidebar-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--ins-topbar-height);
+    padding: 0 .75rem;
+    border-bottom: 1px solid var(--ins-sidenav-border-color, #e5e7eb);
+    text-decoration: none;
+    color: var(--ins-emphasis-color, #1c2434);
+    font-weight: 700;
+    font-size: 1.05rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.sidenav-menu .sidebar-brand .brand-text {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sidenav-menu [data-simplebar] {
+    height: calc(100% - var(--ins-topbar-height));
+}
+
+/* ===== الجداول ===== */
+.card .table thead th {
+    font-size: .78rem;
+    letter-spacing: 0;
+    color: var(--ins-secondary-color, #6c757d);
+    border-bottom-width: 2px;
+    white-space: nowrap;
+}
+.card .table tbody td { vertical-align: middle; }
+.card .table tbody tr:hover { background-color: var(--ins-tertiary-bg, #f8f9fa); }
+
+/* ===== حالة فارغة ===== */
+.empty-state {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--ins-secondary-color, #6c757d);
+}
+.empty-state .empty-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ins-tertiary-bg, #f1f3f5);
+    margin-bottom: .75rem;
+}
+
+/* ===== تحسينات عامة ===== */
+.card { transition: box-shadow .15s ease; }
+.btn { border-radius: .5rem; }
+.badge { font-weight: 600; }
+.card-footer:has(.pagination:empty) { display: none; }
+.pagination { margin-bottom: 0; }
+
+/* ===== عدّاد الكمية في سلة البيع/الإرجاع (متوافق مع RTL) ===== */
+.qty-stepper {
+    direction: ltr; /* يثبّت ترتيب الأزرار واستدارة الحواف في الواجهة العربية */
+    display: flex;
+    flex-wrap: nowrap;
+    width: 132px;
+    border: 1px solid var(--ins-border-color, #dee2e6);
+    border-radius: .5rem;
+    overflow: hidden;
+}
+.qty-stepper .btn {
+    flex: 0 0 36px;
+    border: 0;
+    border-radius: 0;
+    background: var(--ins-tertiary-bg, #f1f3f5);
+    color: var(--ins-emphasis-color, #1c2434);
+    font-weight: 700;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .25rem 0;
+    box-shadow: none;
+}
+.qty-stepper .btn:hover { background: var(--ins-secondary-bg, #e9ecef); color: var(--ins-emphasis-color, #1c2434); }
+.qty-stepper .btn:active, .qty-stepper .btn:focus { background: var(--ins-secondary-bg, #e9ecef); color: var(--ins-emphasis-color, #1c2434); box-shadow: none; }
+.qty-stepper .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    border-inline: 1px solid var(--ins-border-color, #dee2e6);
+    border-radius: 0;
+    text-align: center;
+    box-shadow: none;
+    -moz-appearance: textfield;
+}
+.qty-stepper .form-control::-webkit-outer-spin-button,
+.qty-stepper .form-control::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

@@ -25,6 +25,7 @@ Node.js is **not required** to run the app — all CSS/JS assets are pre-built a
 The easiest way to get PHP + Composer on a new machine:
 
 - **macOS / Windows:** install [Laravel Herd](https://herd.laravel.com) — one installer that ships PHP, Composer, and a local web server.
+- **Windows with XAMPP:** see the dedicated [Windows + XAMPP](#installation-on-windows--xampp) section below.
 - **Linux (Ubuntu/Debian):**
   ```bash
   sudo apt update
@@ -34,7 +35,9 @@ The easiest way to get PHP + Composer on a new machine:
   sudo mv composer.phar /usr/local/bin/composer
   ```
 
-## Installation (from scratch)
+## Installation (macOS / Linux / Herd)
+
+Windows + XAMPP users: follow the [dedicated section below](#installation-on-windows--xampp) instead.
 
 ```bash
 # 1. Get the code
@@ -69,6 +72,95 @@ php artisan serve
 Open <http://localhost:8000> and log in.
 
 If you use **Herd** or **Valet**, skip step 7 — place the project in your parked folder and open `https://pos.test` (then set `APP_URL=https://pos.test` in `.env`).
+
+## Installation on Windows + XAMPP
+
+Use this path if you prefer XAMPP over Herd on a fresh Windows machine.
+
+### 1. Install the tools
+
+1. Download and install **[XAMPP](https://www.apachefriends.org/download.html)** with **PHP 8.3 or newer** (the app needs at least 8.3 — pick the newest installer). Installing to the default `C:\xampp` is assumed below.
+2. Download and install **[Git for Windows](https://git-scm.com/download/win)**.
+3. Download and install **[Composer-Setup.exe](https://getcomposer.org/Composer-Setup.exe)**. During setup, when asked for the PHP to use, point it to `C:\xampp\php\php.exe`.
+
+### 2. Enable the required PHP extensions
+
+Open `C:\xampp\php\php.ini` in a text editor and make sure these lines exist **without** a leading semicolon (remove the `;` if present):
+
+```ini
+extension=pdo_sqlite
+extension=sqlite3
+extension=gd
+extension=fileinfo
+extension=mbstring
+extension=curl
+extension=openssl
+extension=zip
+```
+
+Most are already enabled in XAMPP; `gd`, `sqlite3`, and `zip` are the usual ones that need uncommenting. If Apache is running, restart it from the XAMPP Control Panel after saving.
+
+### 3. Install the app
+
+Open **Command Prompt** (`cmd`) and run:
+
+```bat
+:: 1. Get the code (htdocs is convenient, but any folder works)
+cd C:\xampp\htdocs
+git clone <repository-url> pos
+cd pos
+
+:: 2. Install PHP dependencies
+composer install
+
+:: 3. Create your environment file and app key
+copy .env.example .env
+php artisan key:generate
+
+:: 4. Create the SQLite database file and run migrations
+type nul > database\database.sqlite
+php artisan migrate
+
+:: 5. Seed roles, permissions, and users
+php artisan db:seed
+```
+
+> **Important:** step 5 prints the **admin password** — it is generated randomly and shown **only once**. Copy it before closing the window.
+
+```bat
+:: 6. Link public storage (needed for the shop logo upload)
+php artisan storage:link
+
+:: 7. Serve the app
+php artisan serve
+```
+
+Open <http://localhost:8000> and log in. No MySQL setup is needed — the app uses SQLite, so you don't have to start the MySQL service or create a database in phpMyAdmin.
+
+> `php artisan storage:link` creates a symbolic link; on Windows this may require running the terminal **as Administrator** (or enabling Windows *Developer Mode* in Settings → For developers).
+
+### Optional: serve through Apache at http://pos.localhost
+
+`php artisan serve` is the simplest way to run the app, but if you want it served by XAMPP's Apache instead:
+
+1. Open `C:\xampp\apache\conf\extra\httpd-vhosts.conf` and add:
+
+   ```apache
+   <VirtualHost *:80>
+       ServerName pos.localhost
+       DocumentRoot "C:/xampp/htdocs/pos/public"
+       <Directory "C:/xampp/htdocs/pos/public">
+           AllowOverride All
+           Require all granted
+       </Directory>
+   </VirtualHost>
+   ```
+
+2. Restart Apache from the XAMPP Control Panel.
+3. Set `APP_URL=http://pos.localhost` in `.env`.
+4. Open <http://pos.localhost>.
+
+The `DocumentRoot` **must** point to the `public` folder — never expose the project root through Apache.
 
 ## Default accounts
 
