@@ -68,6 +68,29 @@
         .shop-logo { max-height: 64px; max-width: 160px; object-fit: contain; margin-bottom: 6px; }
         .receipt .shop-logo { max-height: 44px; max-width: 120px; }
 
+        .toolbar a.return-link { border-color: #e8ab9e; color: #b02a37; }
+
+        .returned-stamp {
+            display: inline-block;
+            border: 2px solid #b02a37;
+            color: #b02a37;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 3px 14px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .receipt .returned-stamp { font-size: 10px; padding: 2px 8px; }
+
+        td.returned-qty { color: #b02a37; font-weight: bold; }
+
+        .totals .row.refund { color: #b02a37; }
+
+        .returns-block { margin-top: 18px; }
+        .returns-block h2 { font-size: 14px; margin-bottom: 6px; color: #b02a37; }
+        .receipt .returns-block h2 { font-size: 11px; }
+        .returns-block a { color: #1c6fd8; }
+
         .invoice-footer {
             margin-top: 22px;
             border-top: 1px dashed #adb5bd;
@@ -102,18 +125,27 @@
         @endif
         @can('manage-returns')
             <a href="{{ route('returns.create', ['invoice' => $sale->invoice_number]) }}">{{ __('messages.returns.create') }}</a>
+            @foreach ($sale->returns as $saleReturn)
+                <a href="{{ route('returns.show', $saleReturn) }}" class="return-link">
+                    {{ $saleReturn->return_number }}
+                </a>
+            @endforeach
         @endcan
         <a href="{{ route('invoices.index') }}">{{ __('messages.actions.back') }}</a>
     </div>
 
     <div class="invoice {{ $mode }}">
 
-        <div class="shop-header">
-            @if ($shop->hasMedia('logo'))
-                <img src="{{ $shop->getFirstMediaUrl('logo') }}" alt="{{ $shop->displayName() }}" class="shop-logo">
-            @endif
-            <h1>{{ $shop->displayName() }}</h1>
-        </div>
+        @if ($shop->hasMedia('logo') || $shop->displayName())
+            <div class="shop-header">
+                @if ($shop->hasMedia('logo'))
+                    <img src="{{ $shop->getFirstMediaUrl('logo') }}" alt="{{ $shop->displayName() }}" class="shop-logo">
+                @endif
+                @if ($shop->displayName())
+                    <h1>{{ $shop->displayName() }}</h1>
+                @endif
+            </div>
+        @endif
 
         <div class="meta">
             <div><span>{{ __('messages.invoice_print.invoice_number') }}:</span> <strong>{{ $sale->invoice_number }}</strong></div>
@@ -125,20 +157,35 @@
             <div><span>{{ __('messages.invoice_print.seller') }}:</span> {{ $sale->user?->name }}</div>
         </div>
 
+        @php($hasReturns = $sale->returns->isNotEmpty())
+
+        @if ($hasReturns)
+            <div class="returned-stamp">{{ __('messages.invoices.has_returns_stamp') }}</div>
+        @endif
+
         <table class="items">
             <thead>
                 <tr>
                     <th>{{ __('messages.invoice_print.item') }}</th>
                     <th>{{ __('messages.invoice_print.qty') }}</th>
+                    @if ($hasReturns)
+                        <th>{{ __('messages.invoice_print.returned_qty') }}</th>
+                        <th>{{ __('messages.invoice_print.net_qty') }}</th>
+                    @endif
                     <th>{{ __('messages.invoice_print.price') }}</th>
                     <th>{{ __('messages.invoice_print.total') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($sale->items as $item)
+                    @php($returnedQty = $returnedByItem[$item->id] ?? 0)
                     <tr>
                         <td>{{ $item->product?->name }}</td>
                         <td>{{ $item->qty }}</td>
+                        @if ($hasReturns)
+                            <td class="{{ $returnedQty > 0 ? 'returned-qty' : '' }}">{{ $returnedQty ?: '—' }}</td>
+                            <td>{{ $item->qty - $returnedQty }}</td>
+                        @endif
                         <td>{{ number_format($item->price, 2) }}</td>
                         <td>{{ number_format($item->total, 2) }}</td>
                     </tr>
@@ -173,13 +220,58 @@
                 <span>{{ __('messages.invoice_print.payment_method') }}</span>
                 <span>{{ $sale->payment_method->label() }}</span>
             </div>
+            @if ($hasReturns)
+                <div class="row refund">
+                    <span>{{ __('messages.invoice_print.total_refunded') }}</span>
+                    <span>−{{ number_format($returnsTotal, 2) }} {{ __('messages.currency') }}</span>
+                </div>
+                <div class="row net">
+                    <span>{{ __('messages.invoice_print.net_after_returns') }}</span>
+                    <span>{{ number_format($sale->total_after_sale - $returnsTotal, 2) }} {{ __('messages.currency') }}</span>
+                </div>
+            @endif
         </div>
 
-        <div class="invoice-footer">
-            <div class="shop-contact">
-                {{ __('messages.invoice_print.shop_address') }}: {{ $shop->displayAddress() }}
-                — {{ __('messages.invoice_print.shop_phone') }}: <span dir="ltr">{{ $shop->displayPhone() }}</span>
+        @if ($hasReturns)
+            <div class="returns-block">
+                <h2>{{ __('messages.invoices.returns_on_invoice') }}</h2>
+                <table class="items">
+                    <thead>
+                        <tr>
+                            <th>{{ __('messages.fields.return_number') }}</th>
+                            <th>{{ __('messages.invoice_print.date') }}</th>
+                            <th>{{ __('messages.fields.items_count') }}</th>
+                            <th>{{ __('messages.fields.total_refund') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($sale->returns as $saleReturn)
+                            <tr>
+                                <td><a href="{{ route('returns.show', $saleReturn) }}" dir="ltr">{{ $saleReturn->return_number }}</a></td>
+                                <td>{{ $saleReturn->date->format('Y-m-d') }}</td>
+                                <td>{{ $saleReturn->items->count() }}</td>
+                                <td>{{ number_format($saleReturn->total_refund, 2) }} {{ __('messages.currency') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+        @endif
+
+        <div class="invoice-footer">
+            @if ($shop->displayAddress() || $shop->displayPhone())
+                <div class="shop-contact">
+                    @if ($shop->displayAddress())
+                        {{ __('messages.invoice_print.shop_address') }}: {{ $shop->displayAddress() }}
+                    @endif
+                    @if ($shop->displayAddress() && $shop->displayPhone())
+                        —
+                    @endif
+                    @if ($shop->displayPhone())
+                        {{ __('messages.invoice_print.shop_phone') }}: <span dir="ltr">{{ $shop->displayPhone() }}</span>
+                    @endif
+                </div>
+            @endif
             <p class="thanks">{{ __('messages.invoices.thanks') }}</p>
         </div>
     </div>

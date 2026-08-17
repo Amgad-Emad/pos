@@ -98,3 +98,56 @@
     <button type="submit" class="btn btn-primary">{{ __('messages.actions.save') }}</button>
     <a href="{{ route('products.index') }}" class="btn btn-light">{{ __('messages.actions.back') }}</a>
 </div>
+
+{{-- تأكيد الحفظ: إضافة/تعديل منتج مباشرةً دون فاتورة شراء --}}
+<div class="modal fade" id="product-confirm-modal" tabindex="-1" aria-labelledby="product-confirm-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title d-flex align-items-center gap-2" id="product-confirm-title">
+                    <i data-lucide="alert-triangle" class="text-warning" style="width:20px;height:20px;"></i>
+                    {{ __('messages.products.confirm_save_title') }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('messages.actions.close') }}"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">
+                    {{ $product ? __('messages.products.confirm_edit_text') : __('messages.products.confirm_add_text') }}
+                </p>
+                <p class="text-muted small mb-0">{{ __('messages.products.purchase_flow_hint') }}</p>
+            </div>
+            <div class="modal-footer flex-wrap">
+                @can('manage-purchases')
+                    <a href="{{ route('purchases.create') }}" class="btn btn-soft-primary me-auto">
+                        {{ __('messages.products.create_purchase_instead') }}
+                    </a>
+                @endcan
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('messages.actions.cancel') }}</button>
+                <button type="button" class="btn btn-primary" id="product-confirm-submit">{{ __('messages.products.confirm_proceed') }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('product-form');
+            const modal = new bootstrap.Modal(document.getElementById('product-confirm-modal'));
+            let confirmed = false;
+
+            // يظهر التأكيد بعد نجاح تحقق الحقول (submit لا يُطلق إلا والحقول سليمة)
+            form.addEventListener('submit', (event) => {
+                if (confirmed) return;
+                event.preventDefault();
+                modal.show();
+            });
+
+            document.getElementById('product-confirm-submit').addEventListener('click', () => {
+                confirmed = true;
+                modal.hide();
+                form.requestSubmit();
+            });
+        });
+    </script>
+@endpush

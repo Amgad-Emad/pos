@@ -61,6 +61,7 @@
                         <th>{{ __('messages.fields.paid_amount') }}</th>
                         <th>{{ __('messages.fields.remaining_amount') }}</th>
                         <th>{{ __('messages.fields.payment_method') }}</th>
+                        <th>{{ __('messages.fields.status') }}</th>
                         @if ($isAdmin)
                             <th>{{ __('messages.fields.seller') }}</th>
                         @endif
@@ -79,6 +80,16 @@
                                 {{ number_format($sale->remaining_amount, 2) }}
                             </td>
                             <td><span class="badge badge-soft-info">{{ $sale->payment_method->label() }}</span></td>
+                            <td>
+                                @if ($sale->returns_count > 0)
+                                    <span class="badge {{ $sale->returns_total >= $sale->total_after_sale ? 'badge-soft-danger' : 'badge-soft-warning' }}">
+                                        {{ $sale->returns_total >= $sale->total_after_sale ? __('messages.invoices.returned_fully') : __('messages.invoices.returned_partially') }}
+                                    </span>
+                                    <small class="text-danger d-block mt-1">−{{ number_format($sale->returns_total, 2) }}</small>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             @if ($isAdmin)
                                 <td>{{ $sale->user?->name }}</td>
                             @endif
@@ -90,7 +101,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $isAdmin ? 9 : 8 }}" class="p-0">
+                            <td colspan="{{ $isAdmin ? 10 : 9 }}" class="p-0">
                                 @include('partials.empty-state', ['message' => __('messages.invoices.no_invoices'), 'icon' => 'receipt'])
                             </td>
                         </tr>

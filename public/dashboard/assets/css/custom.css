@@ -74,6 +74,16 @@
     color: var(--ins-secondary-color, #6c757d);
 }
 
+/* ===== الهيكل العام ===== */
+/* قائمة جانبية أضيق (الافتراضي 260px) */
+html { --ins-sidenav-width: 200px; }
+
+/* إزالة الفراغ الجانبي حول المحتوى (القالب يضيف padding: 0 50px على الشاشات الكبيرة) */
+.content-page { padding: 0 !important; }
+
+/* الطي معطّل: لو علِقت حالة collapse لأي سبب تُعرض القائمة بعرضها الكامل */
+html[data-sidenav-size="collapse"] { --ins-sidenav-width-sm: var(--ins-sidenav-width); }
+
 /* ===== القائمة الجانبية: تمتد لأعلى الصفحة لسد الفراغ فوقها ===== */
 .sidenav-menu { top: 0 !important; }
 .sidenav-menu .sidebar-brand {

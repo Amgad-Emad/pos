@@ -93,7 +93,7 @@ test('shop address and phone appear on the printed invoice', function () {
     }
 });
 
-test('invoice falls back to config defaults when settings are empty', function () {
+test('invoice shows no placeholder shop name when settings are empty', function () {
     $product = Product::factory()->create(['quantity' => 5]);
 
     $sale = app(SaleService::class)->create([
@@ -109,6 +109,7 @@ test('invoice falls back to config defaults when settings are empty', function (
     $this->actingAs($this->admin)
         ->get(route('invoices.show', $sale))
         ->assertOk()
-        ->assertSee(config('pos.shop.name'))
-        ->assertSee(config('pos.shop.address'));
+        ->assertDontSee('متجر نقطة البيع')
+        ->assertDontSee('العنوان الرئيسي للمتجر')
+        ->assertDontSee(__('messages.invoice_print.shop_address').':');
 });

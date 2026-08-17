@@ -2,7 +2,8 @@
     <div class="container-fluid topbar-menu d-flex align-items-center justify-content-between gap-2" style="min-height: var(--ins-topbar-height);">
 
         <div class="d-flex align-items-center gap-2">
-            <button class="button-collapse-toggle btn btn-icon btn-ghost-light text-body" type="button" aria-label="{{ __('messages.nav.main_menu') }}">
+            {{-- زر فتح القائمة للشاشات الصغيرة فقط (طي القائمة معطّل على الشاشات الكبيرة) --}}
+            <button class="button-collapse-toggle btn btn-icon btn-ghost-light text-body d-lg-none" type="button" aria-label="{{ __('messages.nav.main_menu') }}">
                 <i data-lucide="menu" style="width:22px;height:22px;"></i>
             </button>
             <span class="topbar-date d-none d-md-inline-flex align-items-center gap-1">

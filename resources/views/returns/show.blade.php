@@ -115,12 +115,16 @@
 
     <div class="invoice {{ $mode }}">
 
-        <div class="shop-header">
-            @if ($shop->hasMedia('logo'))
-                <img src="{{ $shop->getFirstMediaUrl('logo') }}" alt="{{ $shop->displayName() }}" class="shop-logo">
-            @endif
-            <h1>{{ $shop->displayName() }}</h1>
-        </div>
+        @if ($shop->hasMedia('logo') || $shop->displayName())
+            <div class="shop-header">
+                @if ($shop->hasMedia('logo'))
+                    <img src="{{ $shop->getFirstMediaUrl('logo') }}" alt="{{ $shop->displayName() }}" class="shop-logo">
+                @endif
+                @if ($shop->displayName())
+                    <h1>{{ $shop->displayName() }}</h1>
+                @endif
+            </div>
+        @endif
 
         <div class="doc-title">{{ __('messages.returns.return') }}</div>
 
@@ -167,12 +171,21 @@
             </div>
         </div>
 
-        <div class="invoice-footer">
-            <div class="shop-contact">
-                {{ __('messages.invoice_print.shop_address') }}: {{ $shop->displayAddress() }}
-                — {{ __('messages.invoice_print.shop_phone') }}: <span dir="ltr">{{ $shop->displayPhone() }}</span>
+        @if ($shop->displayAddress() || $shop->displayPhone())
+            <div class="invoice-footer">
+                <div class="shop-contact">
+                    @if ($shop->displayAddress())
+                        {{ __('messages.invoice_print.shop_address') }}: {{ $shop->displayAddress() }}
+                    @endif
+                    @if ($shop->displayAddress() && $shop->displayPhone())
+                        —
+                    @endif
+                    @if ($shop->displayPhone())
+                        {{ __('messages.invoice_print.shop_phone') }}: <span dir="ltr">{{ $shop->displayPhone() }}</span>
+                    @endif
+                </div>
             </div>
-        </div>
+        @endif
     </div>
 
 </body>

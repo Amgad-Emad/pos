@@ -1,4 +1,4 @@
-# نظام نقطة البيع — POS System
+# نظام المبيعات — POS System
 
 An Arabic (RTL) point-of-sale system built with Laravel. It covers the full daily flow of a retail shop:
 

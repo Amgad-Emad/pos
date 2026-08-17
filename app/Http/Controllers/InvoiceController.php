@@ -19,7 +19,8 @@ class InvoiceController extends Controller
 
         $sales = Sale::query()
             ->with('user:id,name')
-            ->withCount('items')
+            ->withCount(['items', 'returns'])
+            ->withSum('returns as returns_total', 'total_refund')
             ->unless($isAdmin, fn ($query) => $query->where('user_id', $request->user()->id))
             ->when($request->string('q')->toString(), fn ($query, $term) => $query->where(
                 fn ($inner) => $inner
@@ -54,10 +55,18 @@ class InvoiceController extends Controller
     {
         $this->authorize('view', $sale);
 
-        $sale->load(['items.product:id,name,code', 'user:id,name']);
+        $sale->load(['items.product:id,name,code', 'user:id,name', 'returns.items']);
+
+        // الكميات المرتجعة لكل صنف لعرض الفاتورة قبل وبعد الإرجاع.
+        $returnedByItem = $sale->returns
+            ->flatMap->items
+            ->groupBy('sale_item_id')
+            ->map(fn ($items) => (int) $items->sum('qty'));
 
         return view('invoices.show', [
             'sale' => $sale,
+            'returnedByItem' => $returnedByItem,
+            'returnsTotal' => (float) $sale->returns->sum('total_refund'),
             'mode' => $request->string('mode')->toString() === 'receipt' ? 'receipt' : 'a4',
             'shop' => \App\Models\ShopSetting::current(),
         ]);

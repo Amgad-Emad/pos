@@ -6,7 +6,7 @@
 @section('content')
     <div class="card">
         <div class="card-body">
-            <form method="POST" action="{{ route('products.update', $product) }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('products.update', $product) }}" enctype="multipart/form-data" id="product-form">
                 @csrf
                 @method('PUT')
                 @include('products._form')

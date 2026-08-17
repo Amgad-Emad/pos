@@ -17,10 +17,10 @@
                 <div class="card">
                     <div class="card-body">
 
-                        <label class="form-label mb-1">{{ __('messages.fields.invoice_number') }}</label>
+                        <label class="form-label mb-1">{{ __('messages.returns.search_label') }}</label>
                         <div class="d-flex gap-2 mb-1">
                             <input type="search" class="form-control form-control-lg" x-model="invoiceTerm"
-                                   @keydown.enter.prevent="lookup()" dir="ltr" style="text-align: end;"
+                                   @keydown.enter.prevent="lookup()"
                                    placeholder="{{ __('messages.returns.search_invoice') }}" autocomplete="off">
                             <button type="button" class="btn btn-primary px-3 d-inline-flex align-items-center gap-1" @click="lookup()" :disabled="loading">
                                 <i data-lucide="search" style="width:16px;height:16px;"></i>
@@ -32,6 +32,29 @@
                         <div class="alert alert-warning mb-3" x-show="notFound" x-cloak>
                             {{ __('messages.returns.invoice_not_found') }}
                         </div>
+
+                        {{-- أكثر من فاتورة مطابقة: اختيار الفاتورة المطلوبة --}}
+                        <template x-if="matches.length > 0">
+                            <div class="mb-3">
+                                <div class="fw-medium mb-2">{{ __('messages.returns.pick_invoice') }}</div>
+                                <div class="list-group">
+                                    <template x-for="match in matches" :key="match.id">
+                                        <button type="button" class="list-group-item list-group-item-action d-flex flex-wrap justify-content-between align-items-center gap-2"
+                                                @click="select(match.id)">
+                                            <span>
+                                                <span class="fw-semibold" dir="ltr" x-text="match.invoice_number"></span>
+                                                <span class="text-muted small" x-text="' — ' + (match.client_name || @js(__('messages.invoices.cash_client')))"></span>
+                                                <span class="text-muted small" dir="ltr" x-show="match.client_phone" x-text="match.client_phone"></span>
+                                            </span>
+                                            <span class="text-muted small">
+                                                <span x-text="match.date"></span>
+                                                — <span class="fw-semibold" x-text="format(match.total_after_sale)"></span> {{ __('messages.currency') }}
+                                            </span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
 
                         @error('sale_id')
                             <div class="alert alert-danger mb-3">{{ $message }}</div>
@@ -186,6 +209,7 @@
                 loading: false,
                 notFound: false,
                 sale: null,
+                matches: [],
                 lines: [],
 
                 init() {
@@ -194,18 +218,30 @@
                 async lookup() {
                     const term = this.invoiceTerm.trim();
                     if (!term) return;
+                    await this.fetchSale(`q=${encodeURIComponent(term)}`);
+                },
+                async select(saleId) {
+                    await this.fetchSale(`id=${saleId}`);
+                },
+                async fetchSale(query) {
                     this.loading = true;
                     this.notFound = false;
                     try {
-                        const response = await fetch(`${config.searchUrl}?q=${encodeURIComponent(term)}`, {
+                        const response = await fetch(`${config.searchUrl}?${query}`, {
                             headers: { 'Accept': 'application/json' },
                         });
                         const data = await response.json();
                         if (!data.found) {
                             this.sale = null;
+                            this.matches = [];
                             this.lines = [];
                             this.notFound = true;
+                        } else if (data.matches) {
+                            this.sale = null;
+                            this.lines = [];
+                            this.matches = data.matches;
                         } else {
+                            this.matches = [];
                             this.sale = data.sale;
                             this.lines = data.sale.items.map(item => ({
                                 sale_item_id: item.sale_item_id,
@@ -221,6 +257,7 @@
                         }
                     } catch (error) {
                         this.sale = null;
+                        this.matches = [];
                         this.lines = [];
                         this.notFound = true;
                     } finally {

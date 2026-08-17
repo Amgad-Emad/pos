@@ -8,6 +8,12 @@
     <link rel="shortcut icon" href="{{ asset('dashboard/assets/images/favicon.ico') }}">
 
     <script src="{{ asset('dashboard/assets/js/config.js') }}"></script>
+    <script>
+        // طي القائمة الجانبية معطّل: تجاهُل أي حالة "collapse" محفوظة من جلسات سابقة.
+        if (document.documentElement.getAttribute('data-sidenav-size') === 'collapse') {
+            document.documentElement.setAttribute('data-sidenav-size', 'default');
+        }
+    </script>
 
     <link href="{{ asset('dashboard/assets/css/vendors.min.css') }}" rel="stylesheet">
     <link href="{{ asset('dashboard/assets/css/app.min.css') }}" rel="stylesheet">

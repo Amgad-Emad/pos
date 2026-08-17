@@ -133,3 +133,67 @@ test('search-sale returns items with returnable quantities and weighted refund',
         ->assertJsonPath('sale.items.0.unit_refund', 150)
         ->assertJsonPath('sale.items.0.returnable', 3);
 });
+
+test('invoices show the return status and the before-and-after totals', function () {
+    $sale = createDiscountedSale($this);
+
+    $this->actingAs($this->seller)->post('/returns', [
+        'sale_id' => $sale->id,
+        'date' => now()->toDateString(),
+        'items' => [['sale_item_id' => $sale->items()->first()->id, 'qty' => 2]],
+    ]);
+
+    $saleReturn = SaleReturn::first();
+
+    // قائمة الفواتير: شارة "مرتجع جزئي" وقيمة المرتجع
+    $this->actingAs($this->seller)->get(route('invoices.index'))
+        ->assertOk()
+        ->assertSee('مرتجع جزئي')
+        ->assertSee('300.00');
+
+    // صفحة الفاتورة: قبل الإرجاع (750) وبعده (450) ورابط إذن الإرجاع
+    $this->actingAs($this->seller)->get(route('invoices.show', $sale))
+        ->assertOk()
+        ->assertSee('بها مرتجع')
+        ->assertSee('750.00')
+        ->assertSee('450.00')
+        ->assertSee($saleReturn->return_number)
+        ->assertSee(route('returns.show', $saleReturn), false);
+});
+
+test('search-sale finds invoices by client name or phone and lists multiple matches', function () {
+    $product = Product::factory()->create(['quantity' => 10, 'selling_price' => 100]);
+
+    foreach (range(1, 2) as $i) {
+        $this->actingAs($this->seller)->post('/sales', [
+            'client_name' => 'عميل مميز',
+            'client_phone' => '01099887766',
+            'date' => now()->toDateString(),
+            'paid_amount' => 100,
+            'payment_method' => 'cash',
+            'items' => [['product_id' => $product->id, 'qty' => 1]],
+        ]);
+    }
+
+    // بحث برقم الهاتف: فاتورتان → قائمة اختيار
+    $this->actingAs($this->seller)
+        ->getJson(route('returns.search-sale', ['q' => '01099887766']))
+        ->assertOk()
+        ->assertJsonPath('found', true)
+        ->assertJsonCount(2, 'matches')
+        ->assertJsonPath('matches.0.client_name', 'عميل مميز');
+
+    // اختيار فاتورة من القائمة بالمعرّف → التفاصيل بالأصناف
+    $this->actingAs($this->seller)
+        ->getJson(route('returns.search-sale', ['id' => Sale::first()->id]))
+        ->assertOk()
+        ->assertJsonPath('found', true)
+        ->assertJsonPath('sale.invoice_number', Sale::first()->invoice_number)
+        ->assertJsonCount(1, 'sale.items');
+
+    // بحث باسم العميل مع مطابقة واحدة فقط لعميل آخر
+    $this->actingAs($this->seller)
+        ->getJson(route('returns.search-sale', ['q' => 'غير موجود']))
+        ->assertOk()
+        ->assertJsonPath('found', false);
+});

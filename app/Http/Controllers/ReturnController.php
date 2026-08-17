@@ -48,46 +48,83 @@ class ReturnController extends Controller
     }
 
     /**
-     * جلب فاتورة بأصنافها والكميات القابلة للإرجاع (JSON).
+     * البحث عن فاتورة برقمها أو باسم العميل أو رقم هاتفه (JSON).
+     *
+     * مطابقة واحدة → تفاصيل الفاتورة بأصنافها مباشرة.
+     * أكثر من مطابقة → قائمة مختصرة يختار منها المستخدم (ثم يُطلب التفصيل بـ id).
      */
     public function searchSale(Request $request): JsonResponse
     {
+        if ($request->filled('id')) {
+            $sale = Sale::query()->find($request->integer('id'));
+
+            return $sale
+                ? response()->json(['found' => true, 'sale' => $this->saleDetails($sale)])
+                : response()->json(['found' => false]);
+        }
+
         $term = trim($request->string('q')->toString());
 
-        // البحث بمطابقة رقم الفاتورة بالكامل: العميل يعود بالإيصال لأي بائع،
-        // والمطابقة التامة تمنع تصفح فواتير الآخرين.
-        $sale = Sale::query()
-            ->with('items.product:id,name,code')
-            ->where('invoice_number', $term)
-            ->first();
-
-        if (! $sale) {
+        if ($term === '') {
             return response()->json(['found' => false]);
         }
 
-        $returned = $this->returnService->returnedQuantities($sale);
+        $matches = Sale::query()
+            ->where(fn ($query) => $query
+                ->where('invoice_number', 'like', "%{$term}%")
+                ->orWhere('client_name', 'like', "%{$term}%")
+                ->orWhere('client_phone', 'like', "%{$term}%"))
+            ->orderByDesc('id')
+            ->limit(8)
+            ->get();
+
+        if ($matches->isEmpty()) {
+            return response()->json(['found' => false]);
+        }
+
+        if ($matches->count() === 1) {
+            return response()->json(['found' => true, 'sale' => $this->saleDetails($matches->first())]);
+        }
 
         return response()->json([
             'found' => true,
-            'sale' => [
+            'matches' => $matches->map(fn (Sale $sale) => [
                 'id' => $sale->id,
                 'invoice_number' => $sale->invoice_number,
                 'date' => $sale->date->format('Y-m-d'),
                 'client_name' => $sale->client_name,
-                'total_amount' => (float) $sale->total_amount,
-                'sale_amount' => (float) $sale->sale_amount,
+                'client_phone' => $sale->client_phone,
                 'total_after_sale' => (float) $sale->total_after_sale,
-                'items' => $sale->items->map(fn ($item) => [
-                    'sale_item_id' => $item->id,
-                    'name' => $item->product?->name,
-                    'code' => $item->product?->code,
-                    'qty' => $item->qty,
-                    'price' => (float) $item->price,
-                    'unit_refund' => (float) $item->price_after_sale,
-                    'returnable' => $item->qty - ($returned[$item->id] ?? 0),
-                ])->values(),
-            ],
+            ])->values(),
         ]);
+    }
+
+    /**
+     * تفاصيل الفاتورة بأصنافها والكميات القابلة للإرجاع وقيم الاسترداد الموزونة.
+     */
+    protected function saleDetails(Sale $sale): array
+    {
+        $sale->load('items.product:id,name,code');
+        $returned = $this->returnService->returnedQuantities($sale);
+
+        return [
+            'id' => $sale->id,
+            'invoice_number' => $sale->invoice_number,
+            'date' => $sale->date->format('Y-m-d'),
+            'client_name' => $sale->client_name,
+            'total_amount' => (float) $sale->total_amount,
+            'sale_amount' => (float) $sale->sale_amount,
+            'total_after_sale' => (float) $sale->total_after_sale,
+            'items' => $sale->items->map(fn ($item) => [
+                'sale_item_id' => $item->id,
+                'name' => $item->product?->name,
+                'code' => $item->product?->code,
+                'qty' => $item->qty,
+                'price' => (float) $item->price,
+                'unit_refund' => (float) $item->price_after_sale,
+                'returnable' => $item->qty - ($returned[$item->id] ?? 0),
+            ])->values(),
+        ];
     }
 
     public function store(StoreReturnRequest $request): RedirectResponse
