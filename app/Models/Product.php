@@ -59,9 +59,9 @@ class Product extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
-        // مصغّرة عالية الدقة (تُعرض بحجم 40-64 بكسل، والحجم المضاعف يجعلها حادة على شاشات retina).
+        // مصغّرة عالية الدقة (تُعرض بحجم 200 بكسل، والحجم المضاعف يجعلها حادة على شاشات retina).
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 240, 240)
+            ->fit(Fit::Crop, 500, 500)
             ->quality(95)
             ->nonQueued();
 
