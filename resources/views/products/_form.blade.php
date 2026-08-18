@@ -10,9 +10,10 @@
     </div>
 
     <div class="col-md-6">
-        <label for="code" class="form-label required">{{ __('messages.fields.code') }}</label>
+        <label for="code" class="form-label">{{ __('messages.fields.code') }}</label>
         <input type="text" id="code" name="code" value="{{ old('code', $product?->code) }}"
-               class="form-control @error('code') is-invalid @enderror" required>
+               class="form-control @error('code') is-invalid @enderror"
+               placeholder="{{ __('messages.products.code_hint') }}">
         @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
@@ -89,7 +90,11 @@
     @if ($product?->hasMedia('image'))
         <div class="col-md-6">
             <label class="form-label d-block">{{ __('messages.products.current_image') }}</label>
-            <img src="{{ $product->getFirstMediaUrl('image', 'thumb') }}" alt="{{ $product->name }}" class="rounded border" width="64" height="64">
+            <img src="{{ $product->getFirstMediaUrl('image', 'thumb') }}" alt="{{ $product->name }}"
+                 class="rounded border zoomable" width="120" height="120"
+                 data-lightbox-src="{{ $product->getFirstMediaUrl('image', 'large') ?: $product->getFirstMediaUrl('image') }}"
+                 data-lightbox-caption="{{ $product->name }}"
+                 title="{{ __('messages.products.click_to_zoom') }}">
         </div>
     @endif
 </div>

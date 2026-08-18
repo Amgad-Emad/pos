@@ -95,6 +95,9 @@ class PurchaseService
     protected function applyItems(SupplierPurchase $purchase, array $items): void
     {
         foreach ($items as $item) {
+            // الكود اختياري: عند تركه فارغًا يُولَّد كود جديد ويُنشأ منتج جديد بدل الربط بمنتج قائم.
+            $item['code'] = filled($item['code'] ?? null) ? $item['code'] : Product::generateCode();
+
             $purchase->items()->create([
                 'name' => $item['name'],
                 'code' => $item['code'],

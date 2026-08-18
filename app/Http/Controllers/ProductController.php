@@ -32,7 +32,11 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request): RedirectResponse
     {
-        $product = Product::create($request->safe()->except('image'));
+        $data = $request->safe()->except('image');
+        // الكود اختياري: يُولَّد تلقائيًا عند تركه فارغًا حتى يبقى لكل منتج كود فريد.
+        $data['code'] = filled($data['code'] ?? null) ? $data['code'] : Product::generateCode();
+
+        $product = Product::create($data);
 
         if ($request->hasFile('image')) {
             $product->addMediaFromRequest('image')->toMediaCollection('image');
@@ -48,7 +52,11 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
-        $product->update($request->safe()->except('image'));
+        $data = $request->safe()->except('image');
+        // ترك الكود فارغًا في التعديل يُبقي الكود الحالي كما هو.
+        $data['code'] = filled($data['code'] ?? null) ? $data['code'] : ($product->code ?: Product::generateCode());
+
+        $product->update($data);
 
         if ($request->hasFile('image')) {
             $product->addMediaFromRequest('image')->toMediaCollection('image');

@@ -19,7 +19,7 @@ class UpdateProductRequest extends FormRequest
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:100',
                 Rule::unique('products', 'code')->ignore($this->route('product')),
@@ -28,7 +28,7 @@ class UpdateProductRequest extends FormRequest
             'selling_price' => ['required', 'numeric', 'min:0', 'max:9999999999'],
             'wholesale_price' => ['required', 'numeric', 'min:0', 'max:9999999999'],
             'quantity' => ['required', 'integer', 'min:0'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image', 'max:20480'],
         ];
     }
 }

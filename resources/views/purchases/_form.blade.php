@@ -73,7 +73,7 @@
             <thead class="bg-light-subtle">
                 <tr>
                     <th style="min-width:160px;">{{ __('messages.fields.name') }}</th>
-                    <th style="min-width:120px;">{{ __('messages.fields.code') }}</th>
+                    <th style="min-width:140px;">{{ __('messages.fields.code') }}</th>
                     <th style="min-width:140px;">{{ __('messages.fields.parent_category') }}</th>
                     <th style="min-width:140px;">{{ __('messages.fields.sub_category') }}</th>
                     <th style="min-width:150px;">{{ __('messages.fields.image') }}</th>
@@ -94,7 +94,8 @@
                         </td>
                         <td>
                             <input type="text" class="form-control form-control-sm" x-model="item.code"
-                                   :name="`items[${index}][code]`" required>
+                                   :name="`items[${index}][code]`"
+                                   placeholder="{{ __('messages.products.code_hint') }}">
                         </td>
                         <td>
                             <select class="form-select form-select-sm" x-model="item.main_category_id"

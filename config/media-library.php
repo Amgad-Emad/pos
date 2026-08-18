@@ -50,7 +50,7 @@ return [
      * The maximum file size of an item in bytes.
      * Adding a larger file will result in an exception.
      */
-    'max_file_size' => 1024 * 1024 * 10, // 10MB
+    'max_file_size' => 1024 * 1024 * 25, // 25MB
 
     /*
      * Uploads whose file name contains any of these extensions will be rejected.
@@ -182,13 +182,14 @@ return [
      */
     'image_optimizers' => [
         Jpegoptim::class => [
-            '-m85', // set maximum quality to 85%
+            '-m95', // set maximum quality to 95%
             '--force', // ensure that progressive generation is always done also if a little bigger
             '--strip-all', // this strips out all text information such as comments and EXIF data
             '--all-progressive', // this will make sure the resulting image is a progressive one
         ],
         Pngquant::class => [
             '--force', // required parameter for this package
+            '--quality=85-100', // keep png conversions visually lossless
         ],
         Optipng::class => [
             '-i0', // this will result in a non-interlaced, progressive scanned image

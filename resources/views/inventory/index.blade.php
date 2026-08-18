@@ -35,10 +35,13 @@
                             <td>
                                 @if ($product->hasMedia('image'))
                                     <img src="{{ $product->getFirstMediaUrl('image', 'thumb') }}" alt="{{ $product->name }}"
-                                         class="rounded" width="40" height="40">
+                                         class="rounded border zoomable" width="48" height="48"
+                                         data-lightbox-src="{{ $product->getFirstMediaUrl('image', 'large') ?: $product->getFirstMediaUrl('image') }}"
+                                         data-lightbox-caption="{{ $product->name }}"
+                                         title="{{ __('messages.actions.view') }}">
                                 @else
-                                    <span class="avatar-title bg-body-secondary text-muted rounded d-inline-flex align-items-center justify-content-center" style="width:40px;height:40px;">
-                                        <i data-lucide="image" style="width:18px;height:18px;"></i>
+                                    <span class="avatar-title bg-body-secondary text-muted rounded d-inline-flex align-items-center justify-content-center" style="width:48px;height:48px;">
+                                        <i data-lucide="image" style="width:20px;height:20px;"></i>
                                     </span>
                                 @endif
                             </td>

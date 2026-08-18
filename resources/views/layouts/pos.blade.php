@@ -63,6 +63,8 @@
         </div>
     </div>
 
+    @include('partials.image-lightbox')
+
     <script src="{{ asset('dashboard/assets/js/vendors.min.js') }}"></script>
     <script src="{{ asset('dashboard/assets/js/app.js') }}"></script>
     @stack('scripts')

@@ -59,9 +59,29 @@ class Product extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
+        // مصغّرة عالية الدقة (تُعرض بحجم 40-64 بكسل، والحجم المضاعف يجعلها حادة على شاشات retina).
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 80, 80)
+            ->fit(Fit::Crop, 240, 240)
+            ->quality(95)
             ->nonQueued();
+
+        // نسخة كبيرة للعرض داخل نافذة التكبير دون تحميل الملف الأصلي كاملًا.
+        $this->addMediaConversion('large')
+            ->fit(Fit::Contain, 2000, 2000)
+            ->quality(95)
+            ->nonQueued();
+    }
+
+    /**
+     * كود تلقائي للمنتجات التي تُضاف بدون كود (الحقل اختياري في النماذج).
+     */
+    public static function generateCode(string $prefix = 'PRD'): string
+    {
+        do {
+            $code = $prefix.'-'.str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+        } while (static::where('code', $code)->exists());
+
+        return $code;
     }
 
     public function isLowStock(): bool

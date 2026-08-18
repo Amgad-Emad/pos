@@ -179,3 +179,68 @@ test('purchase totals are computed server side', function () {
     expect((float) $purchase->total_amount)->toBe(50.00)
         ->and((float) $purchase->remaining_amount)->toBe(20.00);
 });
+
+test('a purchase item without a code gets an auto generated one', function () {
+    $response = $this->actingAs($this->admin)->post('/purchases', [
+        'date' => now()->toDateString(),
+        'supplier_id' => $this->supplier->id,
+        'amount_paid' => 0,
+        'sale_price' => null,
+        'items' => [
+            [
+                'name' => 'صنف بدون كود',
+                'code' => '',
+                'category_id' => $this->category->id,
+                'purchase_price' => 10,
+                'selling_price' => 20,
+                'wholesale_price' => 15,
+                'quantity' => 4,
+            ],
+        ],
+    ]);
+
+    $response->assertRedirect(route('purchases.index', absolute: false));
+
+    $product = Product::where('name', 'صنف بدون كود')->first();
+
+    expect($product)->not->toBeNull()
+        ->and($product->code)->not->toBeEmpty()
+        ->and($product->quantity)->toBe(4);
+
+    // نفس الكود المولّد يُحفظ في صنف الفاتورة حتى يبقى عكس المخزون صحيحًا.
+    expect(SupplierPurchase::first()->items()->first()->code)->toBe($product->code);
+});
+
+test('a product can be created without a code', function () {
+    $response = $this->actingAs($this->admin)->post('/products', [
+        'supplier_id' => $this->supplier->id,
+        'category_id' => $this->category->id,
+        'name' => 'منتج بدون كود',
+        'code' => '',
+        'purchase_price' => 10,
+        'selling_price' => 20,
+        'wholesale_price' => 15,
+        'quantity' => 2,
+    ]);
+
+    $response->assertRedirect(route('products.index', absolute: false));
+
+    expect(Product::where('name', 'منتج بدون كود')->first()->code)->not->toBeEmpty();
+});
+
+test('clearing the code on update keeps the existing product code', function () {
+    $product = Product::factory()->create(['code' => 'KEEP-01']);
+
+    $this->actingAs($this->admin)->put("/products/{$product->id}", [
+        'supplier_id' => $product->supplier_id,
+        'category_id' => $product->category_id,
+        'name' => $product->name,
+        'code' => '',
+        'purchase_price' => $product->purchase_price,
+        'selling_price' => $product->selling_price,
+        'wholesale_price' => $product->wholesale_price,
+        'quantity' => $product->quantity,
+    ])->assertRedirect(route('products.index', absolute: false));
+
+    expect($product->refresh()->code)->toBe('KEEP-01');
+});

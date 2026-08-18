@@ -53,7 +53,10 @@
                                 <div class="col-md-6">
                                     <label class="form-label d-block">{{ __('messages.settings.current_logo') }}</label>
                                     <img src="{{ $settings->getFirstMediaUrl('logo', 'thumb') }}" alt="{{ $settings->displayName() }}"
-                                         class="rounded border bg-white p-1" style="max-height: 80px;">
+                                         class="rounded border bg-white p-1 zoomable" style="max-height: 120px;"
+                                         data-lightbox-src="{{ $settings->getFirstMediaUrl('logo') }}"
+                                         data-lightbox-caption="{{ $settings->displayName() }}"
+                                         title="{{ __('messages.products.click_to_zoom') }}">
                                 </div>
                             @endif
                         </div>

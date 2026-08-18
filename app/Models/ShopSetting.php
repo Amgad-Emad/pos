@@ -30,7 +30,8 @@ class ShopSetting extends Model implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Contain, 200, 200)
+            ->fit(Fit::Contain, 600, 600)
+            ->quality(95)
             ->nonQueued();
     }
 

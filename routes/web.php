@@ -25,7 +25,7 @@ Route::get('/', function (Request $request) {
 })->name('home');
 
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::get('dashboard', DashboardController::class)
+    Route::get('pos/dashboard', DashboardController::class)
         ->middleware('permission:view-dashboard')
         ->name('dashboard');
 
