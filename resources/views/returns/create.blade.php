@@ -7,6 +7,7 @@
     <form method="POST" action="{{ route('returns.store') }}"
           x-data="returnForm({
               searchUrl: @js(route('returns.search-sale')),
+              suggestUrl: @js(route('search.suggestions', 'returns-sale')),
               initialInvoice: @js(old('invoice_number', $invoiceNumber)),
               notFoundMessage: @js(__('messages.returns.invoice_not_found')),
           })">
@@ -19,9 +20,36 @@
 
                         <label class="form-label mb-1">{{ __('messages.returns.search_label') }}</label>
                         <div class="d-flex gap-2 mb-1">
-                            <input type="search" class="form-control form-control-lg" x-model="invoiceTerm"
-                                   @keydown.enter.prevent="lookup()"
-                                   placeholder="{{ __('messages.returns.search_invoice') }}" autocomplete="off">
+                            <div class="position-relative flex-grow-1">
+                                <input type="search" class="form-control form-control-lg" x-model="invoiceTerm" role="combobox"
+                                       @input.debounce.150ms="suggest()"
+                                       @focus="suggestOpen = suggestions.length > 0"
+                                       @keydown.arrow-down.prevent="moveSuggest(1)"
+                                       @keydown.arrow-up.prevent="moveSuggest(-1)"
+                                       @keydown.enter.prevent="onSuggestEnter()"
+                                       @keydown.escape="closeSuggest()"
+                                       aria-autocomplete="list" :aria-expanded="suggestOpen"
+                                       placeholder="{{ __('messages.returns.search_invoice') }}" autocomplete="off">
+
+                                <div class="card search-suggest-menu position-absolute w-100 shadow mt-1" style="z-index: 1055;"
+                                     x-show="suggestOpen" x-cloak @click.outside="closeSuggest()">
+                                    <ul class="list-group list-group-flush" role="listbox">
+                                        <template x-for="(item, index) in suggestions" :key="item.id">
+                                            <li class="list-group-item search-suggest-item d-flex justify-content-between align-items-center gap-2"
+                                                :class="{ 'is-active': index === suggestActive }"
+                                                role="option" :aria-selected="index === suggestActive"
+                                                @mouseenter="suggestActive = index" @mousedown.prevent="pickSuggestion(item)">
+                                                <span class="fw-medium" dir="ltr" x-text="item.label"></span>
+                                                <span class="text-muted small text-nowrap" x-text="item.meta"></span>
+                                            </li>
+                                        </template>
+                                        <li class="list-group-item text-muted text-center small"
+                                            x-show="suggestSearched && suggestions.length === 0">
+                                            {{ __('messages.returns.invoice_not_found') }}
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
                             <button type="button" class="btn btn-primary px-3 d-inline-flex align-items-center gap-1" @click="lookup()" :disabled="loading">
                                 <i data-lucide="search" style="width:16px;height:16px;"></i>
                                 {{ __('messages.actions.search') }}
@@ -211,16 +239,80 @@
                 sale: null,
                 matches: [],
                 lines: [],
+                suggestions: [],
+                suggestOpen: false,
+                suggestSearched: false,
+                suggestActive: -1,
+                suggestRequest: null,
 
                 init() {
                     if (this.invoiceTerm) this.lookup();
                 },
+                // اقتراحات الفواتير مع كل حرف يُكتب في حقل البحث.
+                async suggest() {
+                    const term = this.invoiceTerm.trim();
+                    this.suggestActive = -1;
+
+                    if (!term) {
+                        this.closeSuggest();
+                        this.suggestions = [];
+                        this.suggestSearched = false;
+
+                        return;
+                    }
+
+                    if (this.suggestRequest) this.suggestRequest.abort();
+                    const request = new AbortController();
+                    this.suggestRequest = request;
+
+                    try {
+                        const response = await fetch(`${config.suggestUrl}?q=${encodeURIComponent(term)}`, {
+                            headers: { 'Accept': 'application/json' },
+                            signal: request.signal,
+                        });
+                        if (!response.ok) throw new Error(response.status);
+                        this.suggestions = await response.json();
+                        this.suggestSearched = true;
+                        this.suggestOpen = true;
+                    } catch (error) {
+                        if (error.name === 'AbortError') return;
+                        this.suggestions = [];
+                        this.suggestSearched = false;
+                        this.suggestOpen = false;
+                    }
+                },
+                moveSuggest(step) {
+                    if (this.suggestions.length === 0) return;
+                    this.suggestOpen = true;
+                    this.suggestActive = (this.suggestActive + step + this.suggestions.length) % this.suggestions.length;
+                },
+                onSuggestEnter() {
+                    if (this.suggestOpen && this.suggestActive >= 0 && this.suggestions[this.suggestActive]) {
+                        this.pickSuggestion(this.suggestions[this.suggestActive]);
+
+                        return;
+                    }
+
+                    this.closeSuggest();
+                    this.lookup();
+                },
+                pickSuggestion(item) {
+                    this.invoiceTerm = item.label;
+                    this.closeSuggest();
+                    this.select(item.id);
+                },
+                closeSuggest() {
+                    this.suggestOpen = false;
+                    this.suggestActive = -1;
+                },
                 async lookup() {
                     const term = this.invoiceTerm.trim();
                     if (!term) return;
+                    this.closeSuggest();
                     await this.fetchSale(`q=${encodeURIComponent(term)}`);
                 },
                 async select(saleId) {
+                    this.closeSuggest();
                     await this.fetchSale(`id=${saleId}`);
                 },
                 async fetchSale(query) {

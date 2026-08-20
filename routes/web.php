@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SearchSuggestionController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -25,6 +26,11 @@ Route::get('/', function (Request $request) {
 })->name('home');
 
 Route::middleware(['auth', 'active'])->group(function () {
+    // اقتراحات البحث الفورية لكل حقول البحث في الشاشات.
+    Route::get('search/suggestions/{type}', SearchSuggestionController::class)
+        ->whereIn('type', SearchSuggestionController::TYPES)
+        ->name('search.suggestions');
+
     Route::get('pos/dashboard', DashboardController::class)
         ->middleware('permission:view-dashboard')
         ->name('dashboard');

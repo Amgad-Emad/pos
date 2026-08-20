@@ -7,11 +7,22 @@
     <div class="card mb-3">
         <div class="card-body">
             <form method="GET" class="row g-2 align-items-end">
-                <div class="col-md-3 col-12">
+                <div class="col-md-3 col-12 position-relative"
+                     x-data="searchSuggest({ url: @js(route('search.suggestions', 'invoices')), term: @js((string) request('q')) })">
                     <label for="q" class="form-label mb-1">{{ __('messages.actions.search') }}</label>
-                    <input type="search" id="q" name="q" value="{{ request('q') }}"
+                    <input type="search" id="q" name="q" x-model="term" autocomplete="off" role="combobox"
                            class="form-control form-control-sm"
-                           placeholder="{{ __('messages.invoices.search_placeholder') }}">
+                           placeholder="{{ __('messages.invoices.search_placeholder') }}"
+                           aria-autocomplete="list" :aria-expanded="isOpen"
+                           :aria-activedescendant="active >= 0 ? `${id}-option-${active}` : null"
+                           @input.debounce.150ms="onInput()"
+                           @focus="onFocus()"
+                           @keydown.arrow-down.prevent="move(1)"
+                           @keydown.arrow-up.prevent="move(-1)"
+                           @keydown.enter="onEnter($event)"
+                           @keydown.escape="close()">
+
+                    @include('partials.search-suggest-menu')
                 </div>
                 <div class="col-md-2 col-6">
                     <label for="from_date" class="form-label mb-1">{{ __('messages.fields.from_date') }}</label>
@@ -113,4 +124,5 @@
             {{ $sales->links() }}
         </div>
     </div>
+    @include('partials.search-suggest-script')
 @endsection

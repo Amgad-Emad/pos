@@ -33,6 +33,7 @@ return [
         'cancel' => 'إلغاء',
         'back' => 'رجوع',
         'search' => 'بحث',
+        'searching' => 'جارٍ البحث...',
         'print' => 'طباعة',
         'view' => 'عرض',
         'filter' => 'تصفية',

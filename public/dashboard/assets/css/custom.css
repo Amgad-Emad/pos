@@ -182,3 +182,15 @@ html[data-sidenav-size="collapse"] { --ins-sidenav-width-sm: var(--ins-sidenav-w
 }
 .qty-stepper .form-control::-webkit-outer-spin-button,
 .qty-stepper .form-control::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ===== قائمة اقتراحات البحث الفورية ===== */
+.search-suggest-menu {
+    max-height: 320px;
+    min-width: 320px;
+    overflow-y: auto;
+}
+.search-suggest-menu .list-group-item { border-inline: 0; }
+.search-suggest-item { cursor: pointer; }
+.search-suggest-item.is-active,
+.search-suggest-item:hover { background: var(--ins-tertiary-bg, #f1f3f5); }
+.search-suggest-item mark { color: inherit; }
